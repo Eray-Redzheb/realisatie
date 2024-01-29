@@ -29,6 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Update user information in the database
     $user->updateUser($userId, $updatedData);
 
+    // Check if username and password are provided
+    if (isset($_POST['username']) && isset($_POST['password'])) {
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+
+        // Update username and password
+        $user->updateUserCredentials($userId, $username, $password);
+    }
+
     // Redirect to the dashboard after updating
     header("Location: dashboard.php");
     exit();
@@ -47,6 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>Edit Your Profile, <?php echo $userData['username']; ?>!</h1>
 
     <form method="post" action="edit_profile.php">
+        
+    <label for="username">Username:</label>
+    <input type="text" name="username" value="<?php echo $userData['username']; ?>" required>
+
+    <label for="password">Password:</label>
+    <input type="password" name="password" placeholder="Enter new password">
+
         <label for="address">Address:</label>
         <input type="text" name="address" value="<?php echo $userData['address']; ?>" required>
 

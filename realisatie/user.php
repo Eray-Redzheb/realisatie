@@ -86,6 +86,13 @@ class User extends Database {
         ]);
     }
 
+    public function updateUserCredentials($userId, $username, $password) {
+        // Update the username and password in the database
+        $stmt = $this->conn->prepare("UPDATE users SET username = ?, password = ? WHERE id = ?");
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $stmt->execute([$username, $hashedPassword, $userId]);
+    }
+
 // Lessons Packages Function
 
 public function registerLessonPackage($userId, $lessonPackageId) {
@@ -150,6 +157,17 @@ private function getTotalRegisteredLessons($userId) {
     $totalRegisteredLessons = $stmt->fetchColumn();
 
     return $totalRegisteredLessons ? $totalRegisteredLessons : 0;
+}
+
+// Overzicht Pagina
+
+public function getUserLessons($userId) {
+    $stmt = $this->conn->prepare("SELECT ulp.*, lp.name AS package_name, lp.description AS package_description
+                                  FROM user_lesson_packages ulp
+                                  JOIN lesson_packages lp ON ulp.lesson_package_id = lp.id
+                                  WHERE ulp.user_id = ?");
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 

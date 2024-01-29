@@ -16,6 +16,7 @@ $userData = $user->getUserById($userId); // Pass the user ID to retrieve user da
 
 $menu = new Menu();
 $menu->addItem('Lespakketten', 'lespakketten.php');
+$menu->addItem('Overzicht', 'overzicht.php');
 $menu->addItem('Profiel', 'dashboard.php');
 $menu->addItem('Logout', 'logout.php');
 
