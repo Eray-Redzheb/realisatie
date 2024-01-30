@@ -10,7 +10,7 @@ $userList = new UserList();
 $user = new User();
 
 // Check if the logged-in user is an 'eigenaar' (owner)
-$loggedInUserRole = $user->getLoggedInUserRole(); // Use the method from the User class to get the user's role
+$loggedInUserRole = $user->getLoggedInUserRole();
 
 if ($loggedInUserRole == Role::EIGENAAR) {
     // Get all instructors if the user is an 'eigenaar'
@@ -48,6 +48,11 @@ if ($loggedInUserRole == Role::EIGENAAR) {
             <?php endforeach; ?>
 
         </table>
+
+        <ul>
+        <li><a href="rapport.php">Reports</a></li>
+        </ul>
+
     </body>
     </html>
 

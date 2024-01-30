@@ -16,11 +16,7 @@ if ($loggedInUserRole !== Role::EIGENAAR) {
     exit();
 }
 
-// Continue with the rest of your code
-
 ?>
-
-<!-- portal_eigenaar.php -->
 
 <!DOCTYPE html>
 <html lang="en">

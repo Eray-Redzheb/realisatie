@@ -20,7 +20,6 @@ $menu = new Menu();
 $menu->addItem('Lespakketten', 'lespakketten.php');
 $menu->addItem('Overzicht', 'overzicht.php');
 $menu->addItem('Members', 'portal.php');
-$menu->addItem('Score', 'score.php');
 $menu->addItem('Profiel', 'dashboard.php');
 $menu->addItem('Logout', '../pages/auth/logout.php');
 

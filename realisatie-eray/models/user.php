@@ -186,34 +186,50 @@ class User extends Database
 
     // In the User class
 
-    public function updateLessonPackage($lessonId, $name, $description)
+    public function updateLessonPackage($lessonId, $name, $description, $quantity, $price)
     {
         try {
-            // Add your logic to update the lesson package based on the provided parameters
-            // For example, you might use SQL queries to update the database
-            // Make sure to sanitize and validate input data to prevent SQL injection and other security issues
     
-            // Sample SQL query (assuming you use PDO)
-            $query = "UPDATE lespakket SET naam = :name, omschrijving = :description WHERE lespakket_id = :lessonId";
+            $query = "UPDATE lespakket SET naam = :name, omschrijving = :description, aantal = :quantity, prijs = :price WHERE lespakket_id = :lessonId";
     
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':name', $name, PDO::PARAM_STR);
             $stmt->bindParam(':description', $description, PDO::PARAM_STR);
+            $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
+            $stmt->bindParam(':price', $price, PDO::PARAM_STR);
             $stmt->bindParam(':lessonId', $lessonId, PDO::PARAM_INT);
             $stmt->execute();
     
-            // You may need error handling and additional logic based on your requirements
-            // For simplicity, this example assumes a basic update operation
     
             return true; // Return true on success
         } catch (Exception $e) {
-            // Handle exceptions or errors here
-            // You might log the error or throw an exception, depending on your application needs
             return false; // Return false on failure
         }
     }
-    
 
+    public function addSicknessNotification($lessonId, $startDate, $endDate, $explanation, $gebruikerId) {
+        $sql = "INSERT INTO ziekmelding (van, tot, toelichting, gebruiker_id, lespakket_id) VALUES (:startDate, :endDate, :explanation, :gebruikerId, :lessonId)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':startDate', $startDate, PDO::PARAM_STR);
+        $stmt->bindParam(':endDate', $endDate, PDO::PARAM_STR);
+        $stmt->bindParam(':explanation', $explanation, PDO::PARAM_STR);
+        $stmt->bindParam(':gebruikerId', $gebruikerId, PDO::PARAM_INT);
+        $stmt->bindParam(':lessonId', $lessonId, PDO::PARAM_INT);
+        $stmt->execute();
+        $stmt->closeCursor();
+    }
+
+    public function getSicknessReports($gebruikerId) {
+        $sql = "SELECT ziekmelding_id, van, tot, toelichting, gebruiker_id, lespakket_id FROM ziekmelding WHERE gebruiker_id = :gebruikerId";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':gebruikerId', $gebruikerId, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    }
+    
+    
+    
 
     public function calculateRemainingLessons( $userId )
     {
@@ -265,7 +281,7 @@ class User extends Database
 
     public function getLoggedInUserRole() {
         if (!isset($_SESSION['user_id'])) {
-            return null; // or any default role for unauthenticated users
+            return null;
         }
 
         $userData = $this->getUserById($_SESSION['user_id']);
@@ -286,7 +302,7 @@ class UserList extends Database
     public function getAllClients()
     {
         $stmt = $this->conn->prepare("SELECT * FROM gebruiker WHERE rol = :role");
-        $stmt->bindValue(':role', Role::KLANT, PDO::PARAM_INT); // Use bindValue instead of bindParam
+        $stmt->bindValue(':role', Role::KLANT, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -295,7 +311,7 @@ class UserList extends Database
     {
         $role = Role::INSTRUCTUUR;  // Assign the constant to a variable
         $stmt = $this->conn->prepare("SELECT * FROM gebruiker WHERE rol = :role");
-        $stmt->bindValue(':role', $role, PDO::PARAM_INT);  // Use bindValue directly
+        $stmt->bindValue(':role', $role, PDO::PARAM_INT); 
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

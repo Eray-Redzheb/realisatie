@@ -28,8 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_lesson_id'])) 
     $lessonIdToCancel = $_POST['cancel_lesson_id'];
 
     try {
-        // Add your logic to cancel the lesson based on $lessonIdToCancel
-        // You might want to have a function like $user->cancelLesson($userId, $lessonIdToCancel);
         // Redirect or display a success message
     } catch (Exception $e) {
         // Handle any exceptions
@@ -37,16 +35,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_lesson_id'])) 
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_sickness'])) {
+    // Handle sickness form submission
+    $lessonId = $_POST['ziekmelding_lespakket_id'];
+    $startDate = $_POST['sickness_start_date'];
+    $endDate = $_POST['sickness_end_date'];
+    $explanation = $_POST['sickness_explanation'];
+ 
+    try {
+        $user->addSicknessNotification($lessonId, $startDate, $endDate, $explanation, $userId);
+       // Redirect or show success message
+       header("Location: lespakketten.php");
+       exit();
+    } catch (Exception $e) {
+       // Handle the error
+       $error_message = $e->getMessage();
+    }
+ }
+
+
 // Check if the form is submitted for editing a lesson package
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_lesson_id'])) {
     $editLessonId = $_POST['edit_lesson_id'];
     $editedName = $_POST['edited_name'];
     $editedDescription = $_POST['edited_description'];
+    $editedQuantity = $_POST['edited_quantity'];
+    $editedPrice = $_POST['edited_price'];
 
     try {
         // Update the lesson package in the database
-        $user->updateLessonPackage($editLessonId, $editedName, $editedDescription);
-        // Redirect to refresh the page
+        $user->updateLessonPackage($editLessonId, $editedName, $editedDescription, $editedQuantity, $editedPrice);
+        // Redirect to refresh the page or handle success
         header("Location: lespakketten.php");
         exit();
     } catch (Exception $e) {
@@ -98,14 +117,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_lesson_id'])) {
                     <button type="button" onclick="showCancelForm(<?php echo $package['lespakket_id']; ?>)">Cancel</button>
                 </form>
 
-                <form method="post" action="lespakketten.php" style="display: inline;">
+                <!-- --- -->
+
                 <?php if ($userRole === Role::INSTRUCTUUR): ?>
+                 <form method="post" action="lespakketten.php" style="display: inline;">
+                  <input type="hidden" name="ziekmelding_lespakket_id" value="<?php echo $package['lespakket_id']; ?>">
+                    <button type="button" onclick="showSicknessForm(<?php echo $package['lespakket_id']; ?>)">Sickness Notification</button>
+
+            <div id="sicknessForm<?php echo $package['lespakket_id']; ?>" style="display: none;">
+            <label for="sickness_start_date">Start Date:</label>
+            <input type="date" name="sickness_start_date" required>
+            <label for="sickness_end_date">End Date:</label>
+            <input type="date" name="sickness_end_date" required>
+            <label for="sickness_explanation">Explanation:</label>
+            <textarea name="sickness_explanation" required></textarea>
+            <button type="submit" name="submit_sickness">Submit Sickness Notification</button>
+            </div>
+                </form>
+                    <?php endif; ?>
+
+
+                <!-- --- -->
+
+                <form method="post" action="lespakketten.php" style="display: inline;">
+                <?php if ($userRole === Role::INSTRUCTUUR || $userRole === Role::EIGENAAR): ?>
                     <br>
                     <br>
                     <input type="hidden" name="edit_lesson_id" value="<?php echo $package['lespakket_id']; ?>">
-                    <button type="button" onclick="showEditForm(<?php echo $package['lespakket_id']; ?>)">Edit</button>
-                    <?php endif; ?>
-                </form>
+                    <button type="button" onclick="toggleEditForm(<?php echo $package['lespakket_id']; ?>)">Edit</button>
+        
+              <div id="editForm<?php echo $package['lespakket_id']; ?>" style="display: none;">
+                <label for="edited_name">Edited Name:</label>
+                <input type="text" name="edited_name" value="<?php echo $package['naam']; ?>" required>
+                <label for="edited_description">Edited Description:</label>
+            <textarea name="edited_description" required><?php echo $package['omschrijving']; ?></textarea>
+            
+            <!-- Add new input fields for lesson quantity and price -->
+            <label for="edited_quantity">Edited Quantity:</label>
+            <input type="number" name="edited_quantity" value="<?php echo $package['aantal']; ?>" required>
+
+            <label for="edited_price">Edited Price:</label>
+            <input type="text" name="edited_price" value="<?php echo $package['prijs']; ?>" required>
+
+            <button type="submit">Save Changes</button>
+        </div>
+    <?php endif; ?>
+</form>
 
                 <button type="button" onclick="showCommentForm(<?php echo $package['lespakket_id']; ?>)">Add Comment</button>
 
@@ -153,7 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_lesson_id'])) {
 
 <a href="new_lespakket.php">Nieuw Lespakket</a>
 <br>
-<!-- Add more HTML and functionality as needed -->
 
 <a href="dashboard.php">Go back to Dashboard</a>
 <br>
@@ -165,9 +221,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_lesson_id'])) {
         document.getElementById('cancelForm' + lessonId).style.display = 'block';
     }
 
-    function showEditForm(lessonId) {
-        hideAllForms();
-        document.getElementById('editForm' + lessonId).style.display = 'block';
+    function toggleEditForm(lessonId) {
+        var editForm = document.getElementById('editForm' + lessonId);
+        if (editForm.style.display === 'none' || editForm.style.display === '') {
+            editForm.style.display = 'block';
+        } else {
+            editForm.style.display = 'none';
+        }
+    }
+
+    function showSicknessForm(lespakketId) {
+        var sicknessForm = document.getElementById('sicknessForm' + lespakketId);
+        if (sicknessForm.style.display === 'none' || sicknessForm.style.display === '') {
+            sicknessForm.style.display = 'block';
+        } else {
+            sicknessForm.style.display = 'none';
+        }
     }
 
     function showCommentForm(lessonId) {
