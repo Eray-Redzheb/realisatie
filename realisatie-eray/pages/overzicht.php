@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once 'user.php';
+require_once __DIR__ . '/../models/user.php';
 
 // Check of de gebruiker is ingelogd
 if (!isset($_SESSION['user_id'])) {
@@ -63,6 +63,6 @@ $userLessons = $user->getUserLessons($userId);
     <br>
     <a href="dashboard.php">Terug naar Dashboard</a>
     <br>
-    <a href="logout.php">Uitloggen</a>
+    <a href="../pages/auth/logout.php">Uitloggen</a>
 </body>
 </html>
